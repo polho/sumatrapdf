@@ -589,7 +589,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::MoveEndpointByUnit(TextP
                     ++retVal;
             } else {
                 for (int i=0;i<-count && (PreviousPage() || PrevEndpoint());++i)
-                    ++retVal;
+                    --retVal;
             }
 
             return retVal;
@@ -657,7 +657,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::MoveEndpointByUnit(TextP
         } else {
             for (int i=0;i<-count && *target_page!=1;++i) {
                 (*target_page)--;
-                (*moved)++;
+                (*moved)--;
             }
         }
     } else if (unit == TextUnit_Document) {
@@ -679,7 +679,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::MoveEndpointByUnit(TextP
             if (*target_page != beg_page || *target_glyph != beg_glyph) {
                 *target_page = beg_page;
                 *target_glyph = beg_glyph;
-                *moved = 1;
+                *moved = -1;
             } else {
                 *moved = 0;
             }
