@@ -856,7 +856,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::GetChildren(SAFEARRAY **
         if (it->GetPageNum() >= startPage && it->GetPageNum() <= endPage) {
             LONG index = it->GetPageNum() - startPage;
 
-            HRESULT hr = SafeArrayPutElement(psa, &index, it);
+            HRESULT hr = SafeArrayPutElement(psa, &index, static_cast<IRawElementProviderSimple*>(it));
             CrashIf(FAILED(hr));
             it->AddRef();
         }
