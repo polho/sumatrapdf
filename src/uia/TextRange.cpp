@@ -773,8 +773,9 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::ScrollIntoView(BOOL alig
     if (!document->IsDocumentLoaded())
         return E_FAIL;
 
-    // TODO: Might produce wrong values. The proper way of would be to calc the bounding box for the whole selection, not just the position of one endpoint.
-    
+    // HACK: Might produce wrong values. The proper way would be to calc the bounding box for the whole selection, not just the position of one endpoint.
+    // TODO: Use getBoundingRectangles in these calcs?
+
     // extract target location
     int target_page, target_idx;
     if (IsNullRange()) {
@@ -805,10 +806,15 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::ScrollIntoView(BOOL alig
         pageY = 0;
         lineHeight = 0;
     } else {
-        CrashIf(target_idx >= len);
+        CrashIf(target_idx > len);
 
-        pageY = coords[target_idx].y;
-        lineHeight = coords[target_idx].dy;
+        if (target_idx == len) { //last character, use the previous
+            pageY = coords[target_idx - 1].y;
+            lineHeight = coords[target_idx - 1].dy;
+        } else {
+            pageY = coords[target_idx].y;
+            lineHeight = coords[target_idx].dy;
+        }
     }
 
     // position in display coordinates
