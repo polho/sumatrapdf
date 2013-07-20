@@ -772,23 +772,62 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::ScrollIntoView(BOOL alig
 {
     if (!document->IsDocumentLoaded())
         return E_FAIL;
+
+    // TODO: Might produce wrong values. The proper way of would be to calc the bounding box for the whole selection, not just the position of one endpoint.
     
     // extract target location
     int target_page, target_idx;
     if (IsNullRange()) {
-        target_page = 0;
+        target_page = 1;
         target_idx = 0;
     } else if (alignToTop) {
         target_page = startPage;
         target_idx = startGlyph;
     } else {
         target_page = endPage;
-        target_idx = endGlyph;
+
+        // range is not inclusive, move back one charater, but don't change page
+        if (endGlyph == 0) {
+            target_idx = endGlyph;
+        } else {
+            target_idx = endGlyph - 1;
+        }
     }
 
-    // TODO: Scroll to target_page, target_idx
-    //document->GetDM()->ScrollYTo()
-    return E_NOTIMPL;
+    // calculate target y in page coordinates
+    RectI* coords;
+    int len;
+    document->GetDM()->textCache->GetData(target_page, &len, &coords);
+
+    int pageY;
+    int lineHeight;
+    if (target_idx == 0 && len == 0) { // page with no text on it
+        pageY = 0;
+        lineHeight = 0;
+    } else {
+        CrashIf(target_idx >= len);
+
+        pageY = coords[target_idx].y;
+        lineHeight = coords[target_idx].dy;
+    }
+
+    // position in display coordinates
+    float zoom = document->GetDM()->ZoomReal(target_page);
+    int displayY = int(pageY * zoom);
+    int displayLineHeight = int(lineHeight * zoom);
+
+    // TODO: What about rotations and scrolling X too?
+
+    if (alignToTop) {
+        // scroll target to the top of the viewport
+        document->GetDM()->GoToPage(target_page, displayY);
+    } else {
+        // scroll target to the bottom of the viewport
+        int marginCompensation = document->GetDM()->GetWindowMargin()->top + document->GetDM()->GetWindowMargin()->bottom;
+        document->GetDM()->GoToPage(target_page, displayY - document->GetDM()->viewPort.dy + displayLineHeight + marginCompensation);
+    }
+
+    return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::GetChildren(SAFEARRAY **children)
