@@ -140,11 +140,13 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationPageProvider::get_BoundingRectangle
     if (!page)
         return E_FAIL;
 
-    RECT canvasRect;
-    GetWindowRect(root->GetCanvasHWND(), &canvasRect);
+    POINT origin;
+    origin.x = 0;
+    origin.y = 0;
+    ClientToScreen(root->GetCanvasHWND(), &origin);
 
-    pRetVal->left   = canvasRect.left + page->pageOnScreen.x;
-    pRetVal->top    = canvasRect.top + page->pageOnScreen.y;
+    pRetVal->left   = origin.x + page->pageOnScreen.x;
+    pRetVal->top    = origin.y + page->pageOnScreen.y;
     pRetVal->width  = page->pageOnScreen.dx;
     pRetVal->height = page->pageOnScreen.dy;
 
