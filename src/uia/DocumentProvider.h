@@ -43,6 +43,9 @@ public:
     SumatraUIAutomationPageProvider* GetFirstPage();
     SumatraUIAutomationPageProvider* GetLastPage();
 
+    // For TextSelectionProvider and PageProvider
+    HWND GetCanvasHWND();
+
     // IUnknown
     HRESULT STDMETHODCALLTYPE QueryInterface(const IID &,void **);
     ULONG   STDMETHODCALLTYPE AddRef(void);

@@ -33,7 +33,7 @@ void SumatraUIAutomationDocumentProvider::LoadDocument(DisplayModel* newDm)
     // create page element for each page
     SumatraUIAutomationPageProvider* prevPage = NULL;
     for (int i=1; i<=newDm->PageCount(); ++i) {
-        SumatraUIAutomationPageProvider* currentPage = new SumatraUIAutomationPageProvider(i, canvasHwnd, newDm, this);
+        SumatraUIAutomationPageProvider* currentPage = new SumatraUIAutomationPageProvider(i, newDm, this);
         currentPage->sibling_prev = prevPage;
         if (prevPage)
             prevPage->sibling_next = currentPage;
@@ -94,6 +94,12 @@ SumatraUIAutomationPageProvider* SumatraUIAutomationDocumentProvider::GetLastPag
 {
     AssertCrash(IsDocumentLoaded());
     return child_last;
+}
+
+HWND SumatraUIAutomationDocumentProvider::GetCanvasHWND()
+{
+    AssertCrash(IsDocumentLoaded());
+    return canvasHwnd;
 }
 
 HRESULT STDMETHODCALLTYPE SumatraUIAutomationDocumentProvider::QueryInterface(REFIID riid, void **ppv)

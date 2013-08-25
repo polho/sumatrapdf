@@ -11,7 +11,6 @@ class SumatraUIAutomationDocumentProvider;
 class SumatraUIAutomationPageProvider : public IRawElementProviderFragment, public IRawElementProviderSimple, public IValueProvider {
     LONG                                    refCount;
     int                                     pageNum;
-    HWND                                    canvasHwnd;
     DisplayModel*                           dm;
     SumatraUIAutomationDocumentProvider*    root;
 
@@ -25,7 +24,7 @@ class SumatraUIAutomationPageProvider : public IRawElementProviderFragment, publ
     friend class SumatraUIAutomationDocumentProvider; // for setting up next/prev sibling
 
 public:
-    SumatraUIAutomationPageProvider(int pageNum,HWND canvasHwnd, DisplayModel*dm, SumatraUIAutomationDocumentProvider* root);
+    SumatraUIAutomationPageProvider(int pageNum, DisplayModel*dm, SumatraUIAutomationDocumentProvider* root);
     ~SumatraUIAutomationPageProvider();
 
     int GetPageNum() const;

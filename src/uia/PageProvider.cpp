@@ -10,10 +10,10 @@
 #include "uia/Provider.h"
 #include "TextSelection.h"
 
-SumatraUIAutomationPageProvider::SumatraUIAutomationPageProvider(int pageNum,HWND canvasHwnd, DisplayModel*dm, SumatraUIAutomationDocumentProvider* root) :
+SumatraUIAutomationPageProvider::SumatraUIAutomationPageProvider(int pageNum, DisplayModel*dm, SumatraUIAutomationDocumentProvider* root) :
     refCount(1), pageNum(pageNum),
-    canvasHwnd(canvasHwnd), dm(dm),
-    root(root), sibling_prev(NULL), sibling_next(NULL),
+    dm(dm), root(root),
+    sibling_prev(NULL), sibling_next(NULL),
     released(false)
 {
     //root->AddRef(); Don't add refs to our parent & owner. 
@@ -101,6 +101,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationPageProvider::GetRuntimeId(SAFEARRA
         return E_OUTOFMEMORY;
     
     // RuntimeID magic, use hwnd to differentiate providers of different windows
+    HWND canvasHwnd = root->GetCanvasHWND();
     int rId[] = { (int)canvasHwnd, SUMATRA_UIA_PAGE_RUNTIME_ID(pageNum) };
     for (LONG i = 0; i < 2; i++) {
         HRESULT hr = SafeArrayPutElement(psa, &i, (void*)&(rId[i]));
@@ -140,7 +141,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationPageProvider::get_BoundingRectangle
         return E_FAIL;
 
     RECT canvasRect;
-    GetWindowRect(canvasHwnd, &canvasRect);
+    GetWindowRect(root->GetCanvasHWND(), &canvasRect);
 
     pRetVal->left   = canvasRect.left + page->pageOnScreen.x;
     pRetVal->top    = canvasRect.top + page->pageOnScreen.y;
