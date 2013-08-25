@@ -405,15 +405,45 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::GetBoundingRectangles(SA
 
     if (IsNullRange()) {
         SAFEARRAY* sarray = SafeArrayCreateVector(VT_R8,0,0);
-        if (sarray)
+        if (!sarray)
             return E_OUTOFMEMORY;
 
         *boundingRects = sarray;
         return S_OK;
     }
 
-    // TODO: support GetBoundingRectangles
-    return E_NOTIMPL;
+    // Select text
+    TextSelection selection(document->GetDM()->engine, document->GetDM()->textCache);
+    selection.StartAt(startPage, startGlyph);
+    selection.SelectUpTo(endPage, endGlyph);
+
+    // Convert rects to window space
+    SAFEARRAY* sarray = SafeArrayCreateVector(VT_R8,0,selection.result.len*4);
+    if (!sarray)
+        return E_OUTOFMEMORY;
+
+    POINT origin;
+    origin.x = 0;
+    origin.y = 0;
+    ClientToScreen(document->GetCanvasHWND(), &origin);
+
+    for (int selectionNdx = 0; selectionNdx < (LONG)selection.result.len; ++selectionNdx) {
+        RectI rectOnPageI = selection.result.rects[selectionNdx];
+        RectD rectOnPage = RectD(rectOnPageI.x, rectOnPageI.y, rectOnPageI.dx, rectOnPageI.dy);
+        RectI rectI = document->GetDM()->CvtToScreen(selection.result.pages[selectionNdx], rectOnPage);
+
+        rectI.x += origin.x;
+        rectI.y += origin.y;
+
+        double rectD[4] = { rectI.x, rectI.y, rectI.dx, rectI.dy };
+        for (int coordNdx = 0; coordNdx < 4; ++coordNdx) {
+            LONG index = selectionNdx*4 + coordNdx;
+            SafeArrayPutElement(sarray, &index, &rectD[coordNdx]);
+        }
+    }
+
+    *boundingRects = sarray;
+    return S_OK;
 }
 
 HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::GetEnclosingElement(IRawElementProviderSimple **enclosingElement)
