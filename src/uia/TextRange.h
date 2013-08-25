@@ -10,8 +10,8 @@
 class TextSelection;
 class SumatraUIAutomationDocumentProvider;
 
-
-class SumatraUIAutomationTextRange : public ITextRangeProvider {
+class __declspec(uuid("B228F94B-7F38-4E39-B3D1-7667D0A4AC39"))
+SumatraUIAutomationTextRange : public ITextRangeProvider {
     LONG refCount;
 
     // used for getting dm and document state (== is document closed == dm is invalid)

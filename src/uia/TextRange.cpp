@@ -217,6 +217,7 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::QueryInterface(REFIID ri
 {
     static const QITAB qit[] = {
         QITABENT(SumatraUIAutomationTextRange, ITextRangeProvider),
+        QITABENT(SumatraUIAutomationTextRange, SumatraUIAutomationTextRange),
         { 0 }
     };
     return QISearch(this, qit, riid, ppv);
@@ -250,8 +251,12 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::Compare(ITextRangeProvid
         return E_POINTER;
     if (range == NULL)
         return E_POINTER;
-    // TODO: is range guaranteed to be a SumatraUIAutomationTextRange?
-    if (*((SumatraUIAutomationTextRange*)range) == *this)
+
+    SumatraUIAutomationTextRange* myRange;
+    if (range->QueryInterface(__uuidof(SumatraUIAutomationTextRange), (void**)&myRange) != S_OK)
+        return E_FAIL;
+
+    if (*myRange == *this)
         *areSame = TRUE;
     else
         *areSame = FALSE;
@@ -265,6 +270,10 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::CompareEndpoints(enum Te
     if (compValue == NULL)
         return E_POINTER;
 
+    SumatraUIAutomationTextRange* target;
+    if (range->QueryInterface(__uuidof(SumatraUIAutomationTextRange), (void**)&target) != S_OK)
+        return E_FAIL;
+
     int comp_a_page, comp_a_idx;
     if (srcEndPoint == TextPatternRangeEndpoint_Start) {
         comp_a_page = this->startPage;
@@ -275,9 +284,6 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::CompareEndpoints(enum Te
     } else {
         return E_INVALIDARG;
     }
-
-    // TODO: is range guaranteed to be a SumatraUIAutomationTextRange?
-    SumatraUIAutomationTextRange* target = (SumatraUIAutomationTextRange*)range;
 
     int comp_b_page, comp_b_idx;
     if (targetEndPoint == TextPatternRangeEndpoint_Start) {
@@ -735,8 +741,9 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::MoveEndpointByRange(Text
     if (range == NULL)
         return E_POINTER;
 
-    // TODO: is range guaranteed to be a SumatraUIAutomationTextRange?
-    SumatraUIAutomationTextRange* target = (SumatraUIAutomationTextRange*)range;
+    SumatraUIAutomationTextRange* target;
+    if (range->QueryInterface(__uuidof(SumatraUIAutomationTextRange), (void**)&target) != S_OK)
+        return E_FAIL;
 
     // extract target location
     int target_page, target_idx;
@@ -776,6 +783,8 @@ HRESULT STDMETHODCALLTYPE SumatraUIAutomationTextRange::Select(void)
 {
     if (!document->IsDocumentLoaded())
         return E_FAIL;
+
+    // TODO: This is not enough (does not work as expected). We must invalidate the current selection rects in the SumatraMani
 
     if (IsNullRange() || IsEmptyRange()) {
         document->GetDM()->textSelection->Reset();
